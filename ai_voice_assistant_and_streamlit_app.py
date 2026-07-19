@@ -21,6 +21,20 @@ engine.setProperty("rate", 160)
 # Initialize recognizer
 recognizer = sr.Recognizer()
 
+# Wake word
+WAKE_WORD = "hey echo"
+def wait_for_wake_word():
+    while True:
+        command = listen()
+
+        if not command:
+            continue
+
+        if WAKE_WORD in command:
+            print("✅ Wake word detected!")
+            speak("Yes, how can I help you?")
+            return
+
 # AI prompt template
 prompt = PromptTemplate(
     input_variables=["chat_history", "question"],
@@ -85,17 +99,26 @@ if __name__ == "__main__":
     print("Speak to ask a question. Say 'exit' to quit.")
 
     while True:
-        user_query = listen()
-        if not user_query:
-            continue
-        if "exit" in user_query:
-            print("👋 Goodbye!")
-            break
+    print(f"\n🟢 Say '{WAKE_WORD}' to activate the assistant.")
+    wait_for_wake_word()
 
-        print(f"🧍‍♂️ You: {user_query}")
-        ai_response = run_chain(user_query)
+    user_query = listen()
 
- if ai_response:
-    print(f"🤖 AI: {ai_response}\n")
-    speak(ai_response)
+    if not user_query:
+        continue
+
+    if "exit" in user_query:
+        print("👋 Goodbye!")
+        break
+
+    print(f"🧍 You: {user_query}")
+
+    ai_response = run_chain(user_query)
+
+    if ai_response:
+        print(f"🤖 AI: {ai_response}\n")
+        speak(ai_response)
+
+    print("🎤 Waiting for wake word...")
+ 
 # ===============================
