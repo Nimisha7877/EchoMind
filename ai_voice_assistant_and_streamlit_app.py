@@ -28,30 +28,57 @@ prompt = PromptTemplate(
 )
 
 def speak(text):
-    engine.say(text)
-    engine.runAndWait()
+    try:
+        engine.say(text)
+        engine.runAndWait()
+    except Exception:
+        print("⚠️ Text-to-Speech engine failed.")
 
 def listen():
-    with sr.Microphone() as source:
-        print("🎤 Listening...")
-        recognizer.adjust_for_ambient_noise(source)
-        audio = recognizer.listen(source)
+    try:
+        with sr.Microphone() as source:
+            print("🎤 Listening...")
+            recognizer.adjust_for_ambient_noise(source)
+            audio = recognizer.listen(source)
+    except OSError:
+        print("❌ No microphone detected.")
+        return ""
+
     try:
         return recognizer.recognize_google(audio).lower()
+
     except sr.UnknownValueError:
         print("😕 Could not understand audio.")
+
     except sr.RequestError:
         print("⚠️ Speech Recognition service unavailable.")
+
+    except Exception as e:
+        print(f"⚠️ Error: {e}")
+
     return ""
 
 def run_chain(question):
     history_text = "\n".join([
-        f"{msg.type.capitalize()}: {msg.content}" for msg in chat_history.messages
+        f"{msg.type.capitalize()}: {msg.content}"
+        for msg in chat_history.messages
     ])
-    response = llm.invoke(prompt.format(chat_history=history_text, question=question))
-    chat_history.add_user_message(question)
-    chat_history.add_ai_message(response)
-    return response
+
+    try:
+        response = llm.invoke(
+            prompt.format(
+                chat_history=history_text,
+                question=question
+            )
+        )
+
+        chat_history.add_user_message(question)
+        chat_history.add_ai_message(response)
+
+        return response
+
+    except Exception as e:
+        return f"Sorry, I couldn't generate a response. ({e})"
 
 if __name__ == "__main__":
     print("🤖 AI Voice Assistant (Terminal Mode)")
@@ -67,7 +94,8 @@ if __name__ == "__main__":
 
         print(f"🧍‍♂️ You: {user_query}")
         ai_response = run_chain(user_query)
-        print(f"🤖 AI: {ai_response}\n")
-        speak(ai_response)
-        print("🎤 Ask another question or say 'exit' to quit.")
+
+ if ai_response:
+    print(f"🤖 AI: {ai_response}\n")
+    speak(ai_response)
 # ===============================
