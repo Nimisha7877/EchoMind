@@ -48,6 +48,12 @@ def speak(text):
     except Exception:
         print("⚠️ Text-to-Speech engine failed.")
 
+def save_chat(user, ai):
+    with open("chat_history.txt", "a", encoding="utf-8") as file:
+        file.write(f"User: {user}\n")
+        file.write(f"AI: {ai}\n")
+        file.write("-" * 50 + "\n")
+
 def listen():
     try:
         with sr.Microphone() as source:
@@ -116,9 +122,7 @@ if __name__ == "__main__":
     ai_response = run_chain(user_query)
 
     if ai_response:
-        print(f"🤖 AI: {ai_response}\n")
-        speak(ai_response)
-
-    print("🎤 Waiting for wake word...")
- 
+       print(f"🤖 AI: {ai_response}\n")
+       speak(ai_response)
+       save_chat(user_query, ai_response)
 # ===============================
